@@ -4,6 +4,8 @@ local colorScheme = {blue = "FF3CAFFF"}
 
 local version;
 
+local screenshotQueued = false
+
 if (not ASConfig) then ASConfig = {}; end
 
 function print(s)
@@ -27,6 +29,7 @@ function AutoShot_OnLoad()
     AutoShot:RegisterEvent("PLAYER_PVP_KILLS_CHANGED");
     AutoShot:RegisterEvent("UPDATE_BATTLEFIELD_STATUS");
     AutoShot:RegisterEvent("ADDON_LOADED");
+    AutoShot:RegisterEvent("TIME_PLAYED_MSG");
     
     if not ASConfig.SSOnBG then ASConfig.SSOnBG = true; end
     if not ASConfig.SSOnHK then ASConfig.SSOnHK = true; end
@@ -51,10 +54,15 @@ function AutoShot_OnEvent(event, ...)
         if not b or t ~= "pvp" then
             Screenshot();
         end
-        
-    -- Take screenshot on levelup.    
+    
+    -- Take screenshot on levelup after /played message was printed
     elseif (event == "PLAYER_LEVEL_UP" and ASConfig.SSOnLvl) then
-        Screenshot();
+        RequestTimePlayed()
+        screenshotQueued = true
+    end
+    if (event == "TIME_PLAYED_MSG" and ASConfig.SSOnLvl and screenshotQueued) then
+        Screenshot()
+        screenshotQueued = false
     end
 end
 
